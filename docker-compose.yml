@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  trader:
+    build: .
+    container_name: aster-vibe-trader
+    environment:
+      - ASTER_API_KEY=${ASTER_API_KEY}
+      - ASTER_API_SECRET=${ASTER_API_SECRET}
+      - ASTER_API_URL=${ASTER_API_URL}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - TRADING_MODE=${TRADING_MODE}
+    volumes:
+      - ./logs:/app/logs
+      - ./data:/app/data
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    networks:
+      - aster-network
+
+  dashboard:
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile
+    container_name: aster-dashboard
+    ports:
+      - "3000:3000"
+    depends_on:
+      - trader
+    environment:
+      - VITE_API_URL=http://trader:8000
+    networks:
+      - aster-network
+
+networks:
+  aster-network:
+    driver: bridge
+

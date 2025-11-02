@@ -1,0 +1,346 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Alpha Arena Style Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #444;
+}
+
+/* Neon glow background patterns - big blocks only (blue, purple, teal) */
+.bg-grid {
+  background-image: 
+    radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(168, 85, 247, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 40% 20%, rgba(6, 182, 212, 0.12) 0%, transparent 50%),
+    radial-gradient(circle at 60% 70%, rgba(6, 182, 212, 0.1) 0%, transparent 50%);
+  background-size: 600px 600px, 500px 500px, 400px 400px, 450px 450px;
+  background-position: 0 0, 100% 100%, 50% 0, 60% 70%;
+}
+
+/* Animated gradient overlay for fintech feel */
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.bg-fintech-gradient {
+  background: linear-gradient(-45deg, #000000, #0a0a0a, #000000, #0d0d1a);
+  background-size: 400% 400%;
+  animation: gradient-shift 15s ease infinite;
+}
+
+/* Neon glow effects */
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 0.8;
+    filter: brightness(1);
+  }
+  50% {
+    opacity: 1;
+    filter: brightness(1.2);
+  }
+}
+
+.neon-glow-blue {
+  box-shadow: 
+    0 0 10px rgba(59, 130, 246, 0.5),
+    0 0 20px rgba(59, 130, 246, 0.3),
+    0 0 30px rgba(59, 130, 246, 0.2),
+    inset 0 0 20px rgba(59, 130, 246, 0.1);
+}
+
+.neon-glow-purple {
+  box-shadow: 
+    0 0 10px rgba(168, 85, 247, 0.5),
+    0 0 20px rgba(168, 85, 247, 0.3),
+    0 0 30px rgba(168, 85, 247, 0.2),
+    inset 0 0 20px rgba(168, 85, 247, 0.1);
+}
+
+.neon-glow-cyan {
+  box-shadow: 
+    0 0 10px rgba(6, 182, 212, 0.5),
+    0 0 20px rgba(6, 182, 212, 0.3),
+    0 0 30px rgba(6, 182, 212, 0.2),
+    inset 0 0 20px rgba(6, 182, 212, 0.1);
+}
+
+.neon-glow-pink {
+  box-shadow: 
+    0 0 10px rgba(236, 72, 153, 0.5),
+    0 0 20px rgba(236, 72, 153, 0.3),
+    0 0 30px rgba(236, 72, 153, 0.2),
+    inset 0 0 20px rgba(236, 72, 153, 0.1);
+}
+
+.neon-glow-green {
+  box-shadow: 
+    0 0 10px rgba(34, 197, 94, 0.5),
+    0 0 20px rgba(34, 197, 94, 0.3),
+    0 0 30px rgba(34, 197, 94, 0.2),
+    inset 0 0 20px rgba(34, 197, 94, 0.1);
+}
+
+.neon-text-blue {
+  text-shadow: 
+    0 0 10px rgba(59, 130, 246, 0.8),
+    0 0 20px rgba(59, 130, 246, 0.6),
+    0 0 30px rgba(59, 130, 246, 0.4);
+}
+
+.neon-text-purple {
+  text-shadow: 
+    0 0 10px rgba(168, 85, 247, 0.8),
+    0 0 20px rgba(168, 85, 247, 0.6),
+    0 0 30px rgba(168, 85, 247, 0.4);
+}
+
+.neon-text-cyan {
+  text-shadow: 
+    0 0 10px rgba(6, 182, 212, 0.8),
+    0 0 20px rgba(6, 182, 212, 0.6),
+    0 0 30px rgba(6, 182, 212, 0.4);
+}
+
+.neon-text-pink {
+  text-shadow: 
+    0 0 10px rgba(236, 72, 153, 0.8),
+    0 0 20px rgba(236, 72, 153, 0.6),
+    0 0 30px rgba(236, 72, 153, 0.4);
+}
+
+.neon-text-green {
+  text-shadow: 
+    0 0 10px rgba(34, 197, 94, 0.8),
+    0 0 20px rgba(34, 197, 94, 0.6),
+    0 0 30px rgba(34, 197, 94, 0.4);
+}
+
+.neon-border-blue {
+  border-color: rgba(59, 130, 246, 0.5);
+  box-shadow: 
+    0 0 10px rgba(59, 130, 246, 0.3),
+    inset 0 0 10px rgba(59, 130, 246, 0.1);
+}
+
+.neon-border-purple {
+  border-color: rgba(168, 85, 247, 0.5);
+  box-shadow: 
+    0 0 10px rgba(168, 85, 247, 0.3),
+    inset 0 0 10px rgba(168, 85, 247, 0.1);
+}
+
+.neon-border-cyan {
+  border-color: rgba(6, 182, 212, 0.5);
+  box-shadow: 
+    0 0 10px rgba(6, 182, 212, 0.3),
+    inset 0 0 10px rgba(6, 182, 212, 0.1);
+}
+
+.neon-border-green {
+  border-color: rgba(34, 197, 94, 0.5);
+  box-shadow: 
+    0 0 10px rgba(34, 197, 94, 0.3),
+    inset 0 0 10px rgba(34, 197, 94, 0.1);
+}
+
+.neon-border-red {
+  border-color: rgba(239, 68, 68, 0.5);
+  box-shadow: 
+    0 0 10px rgba(239, 68, 68, 0.3),
+    inset 0 0 10px rgba(239, 68, 68, 0.1);
+}
+
+.neon-border-yellow {
+  border-color: rgba(234, 179, 8, 0.5);
+  box-shadow: 
+    0 0 10px rgba(234, 179, 8, 0.3),
+    inset 0 0 10px rgba(234, 179, 8, 0.1);
+}
+
+.neon-glow-red {
+  box-shadow: 
+    0 0 10px rgba(239, 68, 68, 0.5),
+    0 0 20px rgba(239, 68, 68, 0.3),
+    0 0 30px rgba(239, 68, 68, 0.2),
+    inset 0 0 20px rgba(239, 68, 68, 0.1);
+}
+
+.neon-glow-yellow {
+  box-shadow: 
+    0 0 10px rgba(234, 179, 8, 0.5),
+    0 0 20px rgba(234, 179, 8, 0.3),
+    0 0 30px rgba(234, 179, 8, 0.2),
+    inset 0 0 20px rgba(234, 179, 8, 0.1);
+}
+
+.neon-text-red {
+  text-shadow: 
+    0 0 10px rgba(239, 68, 68, 0.8),
+    0 0 20px rgba(239, 68, 68, 0.6),
+    0 0 30px rgba(239, 68, 68, 0.4);
+}
+
+.neon-text-yellow {
+  text-shadow: 
+    0 0 10px rgba(234, 179, 8, 0.8),
+    0 0 20px rgba(234, 179, 8, 0.6),
+    0 0 30px rgba(234, 179, 8, 0.4);
+}
+
+/* Neon animated orbs with glow */
+@keyframes float {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.6;
+  }
+  33% {
+    transform: translate(30px, -30px) scale(1.1);
+    opacity: 0.8;
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+    opacity: 0.7;
+  }
+}
+
+@keyframes orb-glow {
+  0%, 100% {
+    filter: blur(60px) brightness(1);
+  }
+  50% {
+    filter: blur(80px) brightness(1.3);
+  }
+}
+
+.bg-orb {
+  animation: float 20s ease-in-out infinite, orb-glow 4s ease-in-out infinite;
+}
+
+/* Slow flickering animation for neon text */
+@keyframes neon-flicker {
+  0%, 100% {
+    opacity: 1;
+    text-shadow: 
+      0 0 10px rgba(59, 130, 246, 0.8),
+      0 0 20px rgba(59, 130, 246, 0.6),
+      0 0 30px rgba(59, 130, 246, 0.4),
+      0 0 40px rgba(59, 130, 246, 0.3);
+  }
+  50% {
+    opacity: 0.85;
+    text-shadow: 
+      0 0 5px rgba(59, 130, 246, 0.6),
+      0 0 10px rgba(59, 130, 246, 0.4),
+      0 0 15px rgba(59, 130, 246, 0.3),
+      0 0 20px rgba(59, 130, 246, 0.2);
+  }
+  25%, 75% {
+    opacity: 0.95;
+    text-shadow: 
+      0 0 8px rgba(59, 130, 246, 0.7),
+      0 0 16px rgba(59, 130, 246, 0.5),
+      0 0 24px rgba(59, 130, 246, 0.4),
+      0 0 32px rgba(59, 130, 246, 0.3);
+  }
+}
+
+.neon-flicker {
+  animation: neon-flicker 3s ease-in-out infinite;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #000000;
+  color: #f1f5f9;
+  /* Better touch scrolling on mobile */
+  -webkit-overflow-scrolling: touch;
+  overflow-x: hidden;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* Custom scrollbar for decision cards */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #374151;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #4b5563;
+}
+
+/* Mobile-specific improvements */
+@media (max-width: 640px) {
+  /* Prevent horizontal scrolling on body */
+  html, body {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+  
+  /* Better touch targets */
+  button, a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Smoother scrolling */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+

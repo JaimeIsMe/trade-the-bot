@@ -1,0 +1,16 @@
+Options +FollowSymLinks
+RewriteEngine On
+
+# Allow access
+Order allow,deny
+Allow from all
+
+# Set MIME types for JavaScript and CSS
+AddType application/javascript .js
+AddType application/javascript .mjs
+AddType text/css .css
+
+# Don't rewrite requests for actual files
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.html [L]

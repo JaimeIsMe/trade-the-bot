@@ -61,6 +61,24 @@ class TradingConfig(BaseModel):
     trailing_stop_activation: float = 0.015  # Activate trailing stop after 1.5% profit
     trailing_stop_distance: float = 0.01  # Trail at 1% distance
     confidence_threshold: int = 60  # Minimum confidence to trade (lowered for more opportunities)
+    daily_target_percent: float = Field(
+        default_factory=lambda: float(os.getenv("DAILY_TARGET_PERCENT", "0.01"))  # 1% daily equity goal reference
+    )
+    pnl_lock_percent: float = Field(
+        default_factory=lambda: float(os.getenv("PNL_LOCK_PERCENT", "0.01"))  # Lock profits once >=1% equity
+    )
+    close_confidence_threshold: int = Field(
+        default_factory=lambda: int(os.getenv("CLOSE_CONFIDENCE_THRESHOLD", "75"))  # Base confidence to close
+    )
+    close_confidence_min_threshold: int = Field(
+        default_factory=lambda: int(os.getenv("CLOSE_CONFIDENCE_MIN_THRESHOLD", "60"))  # Floor confidence to close
+    )
+    close_confidence_decay_minutes: int = Field(
+        default_factory=lambda: int(os.getenv("CLOSE_CONFIDENCE_DECAY_MINUTES", "30"))  # Minutes to decay threshold
+    )
+    min_hold_time_seconds: int = Field(
+        default_factory=lambda: int(os.getenv("MIN_HOLD_TIME_SECONDS", "300"))  # Minimum hold time before close
+    )
 
 
 class DashboardConfig(BaseModel):

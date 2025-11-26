@@ -49,7 +49,11 @@ class VibeTrader:
         
         # Track when we last opened a position (prevent overtrading)
         self.last_trade_time = None
-        self.min_hold_time = 300  # 5 minutes minimum hold time
+        self.min_hold_time = getattr(config.trading, "min_hold_time_seconds", 300)
+        self.close_confidence_threshold = getattr(config.trading, "close_confidence_threshold", 75)
+        self.close_confidence_min = getattr(config.trading, "close_confidence_min_threshold", 60)
+        self.close_confidence_decay_minutes = getattr(config.trading, "close_confidence_decay_minutes", 30)
+        self.pnl_lock_percent = getattr(config.trading, "pnl_lock_percent", 0.01)
         
         # Persistent decision storage (separate file per bot)
         log_path = decision_log_path or f"logs/decisions_{bot_name}.json"
@@ -152,6 +156,21 @@ class VibeTrader:
                    f"quality={quality_multiplier:.2f}x, perf={performance_multiplier:.2f}x)")
         
         return final_size
+    
+    def _get_required_close_confidence(self, time_in_position_seconds: float = None) -> float:
+        """
+        Dynamically adjust required close confidence based on time in position
+        """
+        base = self.close_confidence_threshold
+        minimum = self.close_confidence_min
+        decay_seconds = max(self.close_confidence_decay_minutes * 60, 1)
+        
+        if time_in_position_seconds is None:
+            return base
+        
+        decay_ratio = min(time_in_position_seconds / decay_seconds, 1.0)
+        required = base - (base - minimum) * decay_ratio
+        return max(minimum, required)
     
     async def start(self):
         """Start the trading agent"""
@@ -474,6 +493,7 @@ class VibeTrader:
             avg_win = trade_stats.get("avg_win_pct", 0.0)
             avg_loss = trade_stats.get("avg_loss_pct", 0.0)
             recent_pnl = trade_stats.get("total_pnl_usd", 0.0)
+            daily_performance = self.trade_tracker.get_recent_performance(hours=24)
             
             # Get actual balance using shared cache - CRITICAL for safe position sizing
             try:
@@ -520,7 +540,8 @@ class VibeTrader:
                     "avg_win": avg_win,
                     "avg_loss": avg_loss,
                     "recent_pnl": recent_pnl,
-                    "total_trades": trade_stats.get("total_trades", 0)
+                    "total_trades": trade_stats.get("total_trades", 0),
+                    "daily": daily_performance
                 }
             }
         except Exception as e:
@@ -536,7 +557,13 @@ class VibeTrader:
                     "avg_win": 0.0,
                     "avg_loss": 0.0,
                     "recent_pnl": 0.0,
-                    "total_trades": 0
+                    "total_trades": 0,
+                    "daily": {
+                        "trades": 0,
+                        "pnl_usd": 0.0,
+                        "win_rate": 0.0,
+                        "hours": 24
+                    }
                 }
             }
     
@@ -670,6 +697,21 @@ Avg Win: {performance.get('avg_win', 0):+.2f}%
 Avg Loss: {performance.get('avg_loss', 0):+.2f}%
 Recent P&L: ${performance.get('recent_pnl', 0):+.2f}
 """
+        daily_perf = performance.get('daily', {})
+        daily_pnl = daily_perf.get('pnl_usd', 0.0)
+        daily_trades = daily_perf.get('trades', 0)
+        daily_win_rate = daily_perf.get('win_rate', 0.0)
+        daily_hours = daily_perf.get('hours', 24)
+        daily_target_pct = config.trading.daily_target_percent * 100
+        equity_pct = (daily_pnl / total_balance * 100) if total_balance else 0.0
+        daily_target_value = total_balance * config.trading.daily_target_percent
+        daily_summary = f"""
+DAILY PERFORMANCE (Last {daily_hours}h):
+═══════════════════════════════════════════════════════════
+Realized P&L: ${daily_pnl:+.2f} ({equity_pct:+.2f}% of equity)
+Trades Closed: {daily_trades} | Win Rate: {daily_win_rate:.1f}%
+Daily Target: +{daily_target_pct:.2f}% (≈ ${daily_target_value:.2f})
+Progress Toward Target: {equity_pct / daily_target_pct * 100 if daily_target_pct else 0:.1f}%"""
         
         # Position and orders info
         positions = portfolio_state.get('positions', [])
@@ -748,6 +790,8 @@ Current Price: ${current_price:.2f}
 {account_summary}
 
 {perf_summary}
+
+{daily_summary}
 
 POSITION STATUS: {position_status}
 
@@ -938,10 +982,29 @@ backed by technical evidence. Trade like your career depends on it - because it 
         # 🛡️ CRITICAL: Prevent conflicting positions!
         # Check if we already have a position for this symbol
         positions = portfolio_state.get('positions', [])
+        total_balance = portfolio_state.get('balance', {}).get('total', 0)
         has_position = any(
             p.get('symbol') == symbol and float(p.get('positionAmt', 0)) != 0 
             for p in positions
         )
+        
+        # Track current position P&L for profit-protection logic
+        position_profit = 0.0
+        profit_lock_active = False
+        if has_position and total_balance:
+            for pos in positions:
+                if pos.get('symbol') == symbol and float(pos.get('positionAmt', 0)) != 0:
+                    position_profit = float(pos.get('unrealizedProfit', 0))
+                    break
+            profit_ratio = position_profit / total_balance
+            profit_lock_active = profit_ratio >= self.pnl_lock_percent
+            if profit_lock_active:
+                logger.info(f"💰 [{self.bot_name}] Profit lock active: unrealized ${position_profit:.2f} "
+                            f"({profit_ratio*100:.2f}% of equity)")
+        
+        time_in_position = None
+        if self.last_trade_time:
+            time_in_position = (datetime.now() - self.last_trade_time).total_seconds()
         
         if has_position:
             # If we have a position, only allow HOLD or CLOSE actions
@@ -952,12 +1015,7 @@ backed by technical evidence. Trade like your career depends on it - because it 
                 decision["action"] = "close"  # Update the decision
             
             # 🛡️ ANTI-OVERTRADING: Require minimum hold time before closing
-            if action == "close" and self.last_trade_time:
-                import time
-                from datetime import datetime
-                
-                time_in_position = (datetime.now() - self.last_trade_time).total_seconds()
-                
+            if action == "close" and time_in_position is not None and not profit_lock_active:
                 if time_in_position < self.min_hold_time:
                     time_remaining = int(self.min_hold_time - time_in_position)
                     logger.info(f"🕐 [{self.bot_name}] Position too new! Held for {int(time_in_position)}s, "
@@ -968,9 +1026,10 @@ backed by technical evidence. Trade like your career depends on it - because it 
                     return  # Don't execute, just log
             
             # 🎯 RAISE THE BAR: Need higher confidence to close (prevent panic exits)
-            if action == "close" and confidence < 75:
-                logger.info(f"🤔 [{self.bot_name}] AI wants to CLOSE but confidence only {confidence}% (need 75%+)")
-                logger.info(f"🛡️ [{self.bot_name}] Converting to HOLD - let position ride")
+            required_confidence = self._get_required_close_confidence(time_in_position)
+            if action == "close" and not profit_lock_active and confidence < required_confidence:
+                logger.info(f"🤔 [{self.bot_name}] AI wants to CLOSE but confidence only {confidence}% "
+                            f"(need {required_confidence:.1f}%+). Holding position.")
                 action = "hold"
                 decision["action"] = "hold"
                 return  # Don't execute
@@ -1083,7 +1142,6 @@ backed by technical evidence. Trade like your career depends on it - because it 
                 logger.success(f"[{self.bot_name}] {action.upper()} position opened: {order}")
                 
                 # Track when we opened this position (for anti-overtrading)
-                from datetime import datetime
                 self.last_trade_time = datetime.now()
                 
                 # Track trade for ML dataset

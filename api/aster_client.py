@@ -373,16 +373,16 @@ class AsterClient:
         Returns:
             Formatted quantity string with correct precision
         """
-        # Determine precision based on symbol
-        if "ASTER" in symbol.upper():
-            # ASTER: whole numbers only
-            precision = 0
-        elif "BTC" in symbol.upper() or "ETH" in symbol.upper() or "SOL" in symbol.upper() or "BNB" in symbol.upper():
-            # Major coins: 3 decimal places
-            precision = 3
-        else:
-            # Default: 3 decimal places
-            precision = 3
+        symbol_upper = symbol.upper()
+        # Precision map derived from Aster lot size filters
+        precision_map = {
+            "ASTERUSDT": 0,   # whole numbers only
+            "BTCUSDT": 3,
+            "ETHUSDT": 3,
+            "SOLUSDT": 2,     # step size 0.01 on Aster
+            "BNBUSDT": 2      # step size 0.01 on Aster (API error if 3 decimals)
+        }
+        precision = precision_map.get(symbol_upper, 3)
         
         # Round to specified precision
         quantity_rounded = round(quantity, precision)

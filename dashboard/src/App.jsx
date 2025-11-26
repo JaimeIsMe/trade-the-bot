@@ -765,6 +765,15 @@ function App() {
               >
                 Info
               </button>
+              <span className="text-gray-600">|</span>
+              <a 
+                href="https://astercommandcenter.com" 
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs sm:text-sm transition-all py-1 px-2 rounded text-gray-400 hover:text-white hover:bg-blue-500/10"
+              >
+                Command Center
+              </a>
             </div>
           </div>
         </div>

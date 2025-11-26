@@ -27,7 +27,7 @@ async def get_aster_client():
     async with _client_lock:
         if _shared_client is None:
             _shared_client = AsterClient()
-        timeout = aiohttp.ClientTimeout(total=30)
+            timeout = aiohttp.ClientTimeout(total=30)
             _shared_client.session = aiohttp.ClientSession(timeout=timeout)
             logger.info("✅ Created shared Aster client with reusable session")
         return _shared_client

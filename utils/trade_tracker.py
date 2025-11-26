@@ -3,7 +3,7 @@ Trade Outcome Tracker - Label AI decisions with actual results
 This builds a dataset for future model improvements
 """
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, Any, List, Optional
 from pathlib import Path
 from loguru import logger
@@ -258,6 +258,62 @@ class TradeTracker:
     def get_stats(self) -> Dict[str, Any]:
         """Get performance statistics"""
         return self.trades.get("stats", {})
+    
+    def get_recent_performance(self, hours: int = 24) -> Dict[str, Any]:
+        """
+        Calculate P&L and win rate for trades closed within the last `hours`
+        """
+        try:
+            closed_trades = [
+                t for t in self.trades.get("trades", [])
+                if t["outcome"]["exit_price"] is not None and t.get("timestamp_close")
+            ]
+            
+            if not closed_trades:
+                return {
+                    "trades": 0,
+                    "pnl_usd": 0.0,
+                    "win_rate": 0.0,
+                    "hours": hours
+                }
+            
+            cutoff = datetime.now() - timedelta(hours=hours)
+            recent_trades = []
+            for trade in closed_trades:
+                try:
+                    close_time = datetime.fromisoformat(trade["timestamp_close"])
+                except Exception:
+                    continue
+                
+                if close_time >= cutoff:
+                    recent_trades.append(trade)
+            
+            if not recent_trades:
+                return {
+                    "trades": 0,
+                    "pnl_usd": 0.0,
+                    "win_rate": 0.0,
+                    "hours": hours
+                }
+            
+            total_pnl = sum(t["outcome"].get("pnl_usd", 0) for t in recent_trades)
+            wins = sum(1 for t in recent_trades if t["outcome"].get("pnl_usd", 0) > 0)
+            win_rate = (wins / len(recent_trades)) * 100 if recent_trades else 0.0
+            
+            return {
+                "trades": len(recent_trades),
+                "pnl_usd": round(total_pnl, 2),
+                "win_rate": round(win_rate, 2),
+                "hours": hours
+            }
+        except Exception as e:
+            logger.error(f"Error computing recent performance: {e}")
+            return {
+                "trades": 0,
+                "pnl_usd": 0.0,
+                "win_rate": 0.0,
+                "hours": hours
+            }
     
     def get_training_data(self, quality_filter: Optional[List[str]] = None) -> List[Dict[str, Any]]:
         """
